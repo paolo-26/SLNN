@@ -15,7 +15,7 @@ grid on
 grid minor
 xlabel('Height (cm)')
 ylabel('Weight (kg)')
-legend('Male','Female','location','northwest')
+legend('Males','Females','location','northwest')
 
 figure(2)
 hold on
@@ -28,7 +28,7 @@ b(2).FaceColor = ametista;
 xlabel('Height (cm)')
 grid on
 grid minor
- legend('Male','Female','location','northeast')
+ legend('Males','Females','location','northeast')
  
 figure(3)
 hold on
@@ -74,12 +74,11 @@ x1 = 120:220; x2 = 30:130;
 F = mvnpdf([X1(:) X2(:)],m_male,c_male);
 F = reshape(F,length(x2),length(x1));
 surf(x1,x2,F);
-colormap parula
 caxis([min(F(:))-.5*range(F(:)),max(F(:))]);
 axis([120 220 30 130 0 max(F(:))])
 xlabel('Height (cm)'); ylabel('Weight (kg)'); zlabel('Probability Density - males');
 title('Males')
-colormap parula; view(0,90); axis equal; colorbar;
+colormap winter; view(0,90); axis equal; colorbar;
 
 figure(5)
 x1 = 120:220; x2 = 30:130;
