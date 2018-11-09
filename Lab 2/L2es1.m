@@ -9,36 +9,41 @@ female=data.heightWeightData(data.heightWeightData(:,1)==2,2:end);
 
 figure(1)
 hold on
-scatter(male(:,1),male(:,2),'xb')
-scatter(female(:,1),female(:,2),'pm')
+scatter(male(:,1),male(:,2),'ob')
+scatter(female(:,1),female(:,2),'om')
 grid on
 grid minor
 xlabel('Height (cm)')
 ylabel('Weight (kg)')
 legend('Males','Females','location','northwest')
+xlim([120 220])
+ylim([30 130])
+axis equal
 
 figure(2)
 hold on
-edges=130:5:210;
+edges=120:5:220;
 h1 = histcounts(male(:,1),edges);
 h2 = histcounts(female(:,1),edges);
 b = bar(edges(1:end-1),[h1;h2]',1);
 b(1).FaceColor = cartadazucchero;
 b(2).FaceColor = ametista;
 xlabel('Height (cm)')
+ylabel('Number of people')
 grid on
 grid minor
  legend('Males','Females','location','northeast')
  
 figure(3)
 hold on
-edges=50:5:130;
+edges=30:5:130;
 h1 = histcounts(male(:,2),edges);
 h2 = histcounts(female(:,2),edges);
 b = bar(edges(1:end-1),[h1;h2]',1);
 b(1).FaceColor = cartadazucchero;
 b(2).FaceColor = ametista;
 xlabel('Weight (kg)')
+ylabel('Number of people')
 grid on
 grid minor
 legend('Male','Female','location','northeast')
