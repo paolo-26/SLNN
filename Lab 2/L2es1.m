@@ -78,7 +78,7 @@ caxis([min(F(:))-.5*range(F(:)),max(F(:))]);
 axis([120 220 30 130 0 max(F(:))])
 xlabel('Height (cm)'); ylabel('Weight (kg)'); zlabel('Probability Density - males');
 title('Males')
-colormap winter; view(0,90); axis equal; colorbar;
+colormap parula; view(0,90); axis equal; colorbar;
 
 figure(5)
 x1 = 120:220; x2 = 30:130;
