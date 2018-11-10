@@ -1,7 +1,7 @@
 clc; clear; close all;
 cartadazucchero = [137; 207; 240]/255;
 ametista = [153; 102; 204]/255;
-data=load('XwindowsDocData.mat')
+data = load('XwindowsDocData.mat')
 err = 0.05
 
 train = [sum(data.ytrain == 1) sum(data.ytrain == 2)];
@@ -14,16 +14,17 @@ figure(1)
 hold on
 stem(theta(1:end,1), 'marker','o', 'color',cartadazucchero, 'markersize',4)
 stem(theta(1:end,2), 'marker','^', 'markersize',4)
-unin = (theta(1:end,1) == theta(1:end,2));
-unin2 = (abs(theta(1:end,1)-theta(1:end,2))) <= err  % error
+%uninformative = (theta(1:end,1) == theta(1:end,2));
+uninformativeWords = (abs(theta(1:end,1)-theta(1:end,2))) <= err;  % error
 %plot(find(unin2),theta(find(unin2)),'kx','markerfacecolor','k','markersize',10)
 grid on
 legend('Microsoft Windows', 'X Windows', 'location','best')
+title('All features')
 
 figure(2)
 hold on
-stem(find(unin2 == 0),theta(find(unin2 == 0),1),'marker','o', 'color','red', 'markersize',4)
-stem(find(unin2 == 0),theta(find(unin2 == 0),2),'marker','^', 'markersize',4)
+stem(find(uninformativeWords == 0),theta(find(uninformativeWords == 0),1),'marker','o', 'color','red', 'markersize',4)
+stem(find(uninformativeWords == 0),theta(find(uninformativeWords == 0),2),'marker','^', 'markersize',4)
 grid on
 title(['Features that differs by at most ', num2str(err)])
 
@@ -41,7 +42,7 @@ legend('Microsoft Windows','X Windows', 'location','best')
 % plot(theta(1:end/2,2),'marker','^','markersize',4)
 % unin=(theta(1:end/2,1)==theta(1:end/2,2))
 % plot(find(unin),theta(find(unin)),'kx','markerfacecolor','k','markersize',10)
-% 
+%
 % subplot(2,1,2)
 % hold on
 % plot(theta(end/2+1:end,1),'marker','o','color',cartadazucchero,'markersize',4)

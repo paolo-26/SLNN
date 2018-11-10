@@ -1,11 +1,11 @@
 close all; clc; clear
-data=load ('heightWeight.mat')
+data = load('heightWeight.mat')
 
-cartadazucchero = [137; 207; 240]/255;
+cartaDaZucchero = [137; 207; 240]/255;
 ametista = [153; 102; 204]/255;
 
-male=data.heightWeightData(data.heightWeightData(:,1)==1,2:end);
-female=data.heightWeightData(data.heightWeightData(:,1)==2,2:end);
+male = data.heightWeightData(data.heightWeightData(:,1) == 1,2:end);
+female = data.heightWeightData(data.heightWeightData(:,1) == 2,2:end);
 
 figure(1)
 hold on
@@ -26,7 +26,7 @@ edges=120:5:220;
 h1 = histcounts(male(:,1),edges);
 h2 = histcounts(female(:,1),edges);
 b = bar(edges(1:end-1),[h1;h2]',1);
-b(1).FaceColor = cartadazucchero;
+b(1).FaceColor = cartaDaZucchero;
 b(2).FaceColor = ametista;
 xlabel('Height (cm)')
 ylabel('Number of people')
@@ -40,7 +40,7 @@ edges=30:5:130;
 h1 = histcounts(male(:,2),edges);
 h2 = histcounts(female(:,2),edges);
 b = bar(edges(1:end-1),[h1;h2]',1);
-b(1).FaceColor = cartadazucchero;
+b(1).FaceColor = cartaDaZucchero;
 b(2).FaceColor = ametista;
 xlabel('Weight (kg)')
 ylabel('Number of people')
@@ -68,15 +68,15 @@ legend('Male','Female','location','northeast')
 % ylabel('Weight (kg)')
 % legend('Male','Female','location','northwest')
 
-m_male = [mean(male)]
-m_female = [mean(female)]
-c_male = [cov(male)]
-c_female = [cov(female)]
+mMale = [mean(male)]
+mFemale = [mean(female)]
+cMale = [cov(male)]
+cFemale = [cov(female)]
 
 figure(4)
 x1 = 120:220; x2 = 30:130;
 [X1,X2] = meshgrid(x1,x2);
-F = mvnpdf([X1(:) X2(:)],m_male,c_male);
+F = mvnpdf([X1(:) X2(:)],mMale,cMale);
 F = reshape(F,length(x2),length(x1));
 surf(x1,x2,F);
 caxis([min(F(:))-.5*range(F(:)),max(F(:))]);
@@ -88,7 +88,7 @@ colormap parula; view(0,90); axis equal; colorbar;
 figure(5)
 x1 = 120:220; x2 = 30:130;
 [X1,X2] = meshgrid(x1,x2);
-F = mvnpdf([X1(:) X2(:)],m_female,c_female);
+F = mvnpdf([X1(:) X2(:)],mFemale,cFemale);
 F = reshape(F,length(x2),length(x1));
 surf(x1,x2,F);
 caxis([min(F(:))-.5*range(F(:)),max(F(:))]);
