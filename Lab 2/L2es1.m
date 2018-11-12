@@ -7,7 +7,8 @@ ametista = [153; 102; 204]/255;  % Color for plots
 male = data.heightWeightData(data.heightWeightData(:,1) == 1,2:end);
 female = data.heightWeightData(data.heightWeightData(:,1) == 2,2:end);
 
-figure(1)  % Scatter plot (males and females)
+%% Scatter plot (males and females)
+figure(1)
 hold on
 scatter(male(:,1),male(:,2),'^b')
 scatter(female(:,1),female(:,2),'vm')
@@ -20,7 +21,8 @@ xlim([120 220])
 ylim([30 130])
 axis equal
 
-figure(2)  % Histogram (males)
+%% Histogram (males)
+figure(2)
 hold on
 edges=120:5:220;
 h1 = histcounts(male(:,1),edges);
@@ -32,9 +34,10 @@ xlabel('Height (cm)')
 ylabel('Number of people')
 grid on
 grid minor
- legend('Males','Females','location','northeast')
+legend('Males','Females','location','northeast')
  
-figure(3)  % Histogram (females)
+%% Histogram (females)
+figure(3)
 hold on
 edges=30:5:130;
 h1 = histcounts(male(:,2),edges);
@@ -48,21 +51,21 @@ grid on
 grid minor
 legend('Male','Female','location','northeast')
 
-% MLE mean (males).
+%% MLE mean (males).
 mMales = 0;
 for i = 1:length(male)
     mMales = mMales + male(i,:);
 end
 mMales = mMales/length(male)
 
-% MLE mean (females).
+%% MLE mean (females).
 mFemales = 0;
 for i = 1:length(female)
     mFemales = mFemales + female(i,:);
 end
 mFemales = mFemales/length(female)
 
-% MLE covariance (males).
+%% MLE covariance (males).
 firstTerm = zeros(2);  % 2x2 matrix of zeros
 for i = 1:length(male)
     firstTerm = firstTerm + male(i,:)'*male(i,:); 
@@ -71,7 +74,7 @@ firstTerm = firstTerm/length(male);
 secondTerm = mMales.*mMales';
 sigmaMales = firstTerm - secondTerm
 
-% MLE covariance (females).
+%% MLE covariance (females).
 firstTerm = zeros(2);  % 2x2 matrix of zeros
 for i = 1:length(female)
     firstTerm = firstTerm + female(i,:)'*female(i,:); 
@@ -80,7 +83,7 @@ firstTerm = firstTerm/length(female);
 secondTerm = mFemales.*mFemales';
 sigmaFemales = firstTerm - secondTerm
 
-% Multivariate gaussian plots.
+%% Multivariate gaussian plot (males)
 figure(4)
 x1 = 120:220; x2 = 30:130;
 [X1,X2] = meshgrid(x1,x2);
@@ -93,6 +96,7 @@ xlabel('Height (cm)'); ylabel('Weight (kg)'); zlabel('Probability Density - male
 title('Males')
 colormap parula; view(0,90); axis equal; colorbar;
 
+%% Multivariate gaussian plot (females)
 figure(5)
 x1 = 120:220; x2 = 30:130;
 [X1,X2] = meshgrid(x1,x2);
