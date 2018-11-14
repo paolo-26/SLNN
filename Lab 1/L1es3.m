@@ -98,8 +98,8 @@ for nRun = 1:2
     end
 end
 legend('Training set','Test set',...
-    'Training set (adjacent cells included)',...
-    'Test set (adjacent cells included)','location','southeast')
+    'Training set (adjacent cells)',...
+    'Test set (adjacent cells)','location','southeast')
 xlabel('k nearest neighbours')
 ylabel('Misclassification rate')
 title('k-NN classifier')
