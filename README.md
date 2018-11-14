@@ -4,7 +4,7 @@ Laboratory activities.
 
 ## Master degree
 
-ICT for Smart Societies - Politecnico di Torino </br>
+* ICT for Smart Societies - Politecnico di Torino </br>
 
 
 ## Software
@@ -17,4 +17,4 @@ ICT for Smart Societies - Politecnico di Torino </br>
 
 ## License
 
-This project is licensed under the Apache-2.0 License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details
