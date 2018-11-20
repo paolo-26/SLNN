@@ -49,8 +49,8 @@ secondTerm = mF.*mF';
 sF = firstTerm - secondTerm
 
 L = length(data.heightWeightData);
-pie(1) = [(SPLIT_M)/((SPLIT_M)+(SPLIT_F))];
-pie(2) = [(SPLIT_F)/((SPLIT_M)+(SPLIT_F))];
+pie(1) = [(L-SPLIT_M)/((L-SPLIT_M)+(L-SPLIT_F))];
+pie(2) = [(L-SPLIT_F)/((L-SPLIT_M)+(L-SPLIT_F))];
 
 % Formulas
 x = test_males;
@@ -58,7 +58,23 @@ for i = 1:length(x)
     num1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
     den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
     den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    posteriorM(i) = num1/(den1+den2);
+    posteriorMM(i) = num1/(den1+den2);
+end
+
+x = test_males;
+for i = 1:length(x)
+    num1 = pie(1)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+    den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
+    den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+    posteriorMF(i) = num1/(den1+den2);
+end
+
+x = test_females;
+for i = 1:length(x)
+    num1 = pie(1)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+    den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
+    den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+    posteriorFF(i) = num1/(den1+den2);
 end
 
 x = test_females;
@@ -66,7 +82,9 @@ for i = 1:length(x)
     num1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
     den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
     den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    posteriorF(i) = num1/(den1+den2);
+    posteriorFM(i) = num1/(den1+den2);
 end
 
+classified = sum(posteriorMM > posteriorMF)/SPLIT_M
+classified = sum(posteriorFF > posteriorFM)/SPLIT_F
 
