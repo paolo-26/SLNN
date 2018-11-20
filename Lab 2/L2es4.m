@@ -76,56 +76,56 @@ pie(2) = [(L-SPLIT_F)/((L-SPLIT_M)+(L-SPLIT_F))];
 
 %% PART 1
 
-x = test_males;
+x = [test_males; test_females];
 for i = 1:length(x)
     num1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
     den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
     den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    posteriorMM(i) = num1/(den1+den2);
+    posteriorM(i) = num1/(den1+den2);
 end
 
-x = test_males;
+x = [test_males; test_females];
 for i = 1:length(x)
     num1 = pie(1)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
     den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
     den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    posteriorMF(i) = num1/(den1+den2);
+    posteriorF(i) = num1/(den1+den2);
 end
+% 
+% x = test_females;
+% for i = 1:length(x)
+%     num1 = pie(1)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+%     den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
+%     den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+%     posteriorFF(i) = num1/(den1+den2);
+% end
+% 
+% x = test_females;
+% for i = 1:length(x)
+%     num1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
+%     den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
+%     den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+%     posteriorFM(i) = num1/(den1+den2);
+%end
 
-x = test_females;
-for i = 1:length(x)
-    num1 = pie(1)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-    den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    posteriorFF(i) = num1/(den1+den2);
+classified(run) = (sum(posteriorM(1:SPLIT_M) > posteriorF(1:SPLIT_M))+sum(posteriorM(SPLIT_M+1:end) < posteriorF(SPLIT_M+1:end))) /(SPLIT_M+SPLIT_F)
+
 end
-
-x = test_females;
-for i = 1:length(x)
-    num1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-    den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-    den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    posteriorFM(i) = num1/(den1+den2);
-end
-
-classifiedM1(run) = sum(posteriorMM > posteriorMF)/SPLIT_M
-classifiedF2(run) = sum(posteriorFF > posteriorFM)/SPLIT_F
-
-end
-
-display('Game over')
 
 %% GRAPH
 
-figure(333)
+figure(5)
 scatter(test_males(:,1),test_males(:,2), '.')
 hold on
 grid minor
 scatter(test_females(:,1),test_females(:,2), '.')
-M=(mean(test_males))
-scatter(M(1),M(2),100, 'kx')
-F=(mean(test_females))
-scatter(F(1),F(2),100, 'kx')
-MF = mean([M; F])
+M = (mean(test_males));
+%scatter(M(1),M(2),100, 'kx')
+F = (mean(test_females));
+%scatter(F(1),F(2),100, 'kx')
+MF = mean([M; F]);
 scatter(MF(1),MF(2),100, 'mx')
 axis equal
+xlabel('Height')
+ylabel('Weight')
+legend('Males', 'Females', 'location','best')
