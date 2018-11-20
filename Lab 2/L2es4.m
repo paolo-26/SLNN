@@ -14,7 +14,7 @@ train_males = males(SPLIT_M+1:end,:);
 test_females = females(1:SPLIT_F,:);
 train_females = females(SPLIT_F+1:end,:);
 
-
+for run = 1:3
 %% PART 1
 % MLE mean (males).
 mM = 0;
@@ -39,6 +39,21 @@ firstTerm = firstTerm/length(train_males);
 secondTerm = mM.*mM';
 sM = firstTerm - secondTerm
 
+if run == 2
+   sM = diag(diag(sM)) 
+end
+
+if run == 3
+    firstTerm = zeros(2);  % 2x2 matrix of zeros
+    shared = [train_males; train_females]
+    for i = 1:length(shared)
+        firstTerm = firstTerm + shared(i,:)'*shared(i,:); 
+    end
+    firstTerm = firstTerm/length(shared);
+    secondTerm = mM.*mM';
+    sM = firstTerm - secondTerm
+end
+
 % MLE covariance (females).
 firstTerm = zeros(2);  % 2x2 matrix of zeros
 for i = 1:length(train_females)
@@ -48,11 +63,19 @@ firstTerm = firstTerm/length(train_females);
 secondTerm = mF.*mF';
 sF = firstTerm - secondTerm
 
+if run == 2
+   sF = diag(diag(sF)) 
+end
+
+if run == 3
+   sf = sM 
+end
 L = length(data.heightWeightData);
 pie(1) = [(L-SPLIT_M)/((L-SPLIT_M)+(L-SPLIT_F))];
 pie(2) = [(L-SPLIT_F)/((L-SPLIT_M)+(L-SPLIT_F))];
 
-% Formulas
+%% PART 1
+
 x = test_males;
 for i = 1:length(x)
     num1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
@@ -85,6 +108,24 @@ for i = 1:length(x)
     posteriorFM(i) = num1/(den1+den2);
 end
 
-classified = sum(posteriorMM > posteriorMF)/SPLIT_M
-classified = sum(posteriorFF > posteriorFM)/SPLIT_F
+classifiedM1(run) = sum(posteriorMM > posteriorMF)/SPLIT_M
+classifiedF2(run) = sum(posteriorFF > posteriorFM)/SPLIT_F
 
+end
+
+display('Game over')
+
+%% GRAPH
+
+figure(333)
+scatter(test_males(:,1),test_males(:,2), '.')
+hold on
+grid minor
+scatter(test_females(:,1),test_females(:,2), '.')
+M=(mean(test_males))
+scatter(M(1),M(2),100, 'kx')
+F=(mean(test_females))
+scatter(F(1),F(2),100, 'kx')
+MF = mean([M; F])
+scatter(MF(1),MF(2),100, 'mx')
+axis equal
