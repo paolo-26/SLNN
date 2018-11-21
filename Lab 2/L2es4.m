@@ -24,7 +24,7 @@ for i = 1:length(trainMales)
     mM = mM + trainMales(i,:);
 end
 
-mM = mM/length(trainMales)
+mM = mM/length(trainMales);
 
 % MLE mean (females).
 mF = 0;
@@ -33,7 +33,7 @@ for i = 1:length(trainFemales)
     mF = mF + trainFemales(i,:);
 end
 
-mF = mF/length(trainFemales)
+mF = mF/length(trainFemales);
 
 % MLE covariance (males).
 firstTerm = zeros(2);  % 2x2 matrix of zeros
@@ -44,13 +44,13 @@ end
 
 firstTerm = firstTerm/length(trainMales);
 secondTerm = mM.*mM';
-sM = firstTerm - secondTerm
+sM = firstTerm - secondTerm;
 
 if run == 2
-   sM = diag(diag(sM))  % Set to zero off-diagonal elements.
+   sM = diag(diag(sM));  % Set to zero off-diagonal elements.
 end
 
-if run == 3
+if run == 3  % Shared covariance matrix
     firstTerm = zeros(2);  % 2x2 matrix of zeros
     shared = [trainMales; trainFemales];
     for i = 1:length(shared)
@@ -58,7 +58,7 @@ if run == 3
     end
     firstTerm = firstTerm/length(shared);
     secondTerm = mM.*mM';
-    sM = firstTerm - secondTerm
+    sM = firstTerm - secondTerm;
 end
 
 % MLE covariance (females).
@@ -68,60 +68,51 @@ for i = 1:length(trainFemales)
 end
 firstTerm = firstTerm/length(trainFemales);
 secondTerm = mF.*mF';
-sF = firstTerm - secondTerm
+sF = firstTerm - secondTerm;
 
 if run == 2
-   sF = diag(diag(sF))  % Set to zero off-diagonal elements.
+   sF = diag(diag(sF));  % Set to zero off-diagonal elements.
 end
 
-if run == 3
-   sf = sM  % Covariance matrices are the same shared covarianca matrix.
+if run == 3  % Shared covarianca matric
+   sf = sM;
 end
 
-pie(1) = [(LM-SPLIT_M)/((LM-SPLIT_M)+(LF-SPLIT_F))];  %  Males
-pie(2) = [(LF-SPLIT_F)/((LM-SPLIT_M)+(LF-SPLIT_F))];  %  Females
-
-%% PART 1
+pie = [(LM-SPLIT_M)/((LM-SPLIT_M)+(LF-SPLIT_F));   %  Males
+       (LF-SPLIT_F)/((LM-SPLIT_M)+(LF-SPLIT_F))];  %  Females
 
 x = [testMales; testFemales];
 for i = 1:length(x)
-    num = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-    den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-    den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    posteriorM(i) = num/(den1+den2);  % Prob. of being male
+    
+    num = pie(1)*(norm(2*pi*sM)^(-1/2))*...
+        (exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
+    den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*...
+        (exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)')); 
+    den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*...
+        (exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+    postM(i) = num/(den1+den2);  % Prob. of being male
 end
 
 x = [testMales; testFemales];
 for i = 1:length(x)
-    num = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-    den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-    posteriorF(i) = num/(den1+den2);  % Prob. of being female
+    num = pie(2)*(norm(2*pi*sF)^(-1/2))*...
+        (exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
+    den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*...
+        (exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));   
+    den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*...
+        (exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)')); 
+    postF(i) = num/(den1+den2);  % Prob. of being female
 end
-% 
-% x = testFemales;
-% for i = 1:length(x)
-%     num = pie(1)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-%     den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-%     den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-%     posteriorFF(i) = num/(den1+den2);
-% end
-% 
-% x = testFemales;
-% for i = 1:length(x)
-%     num = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-%     den1 = pie(1)*(norm(2*pi*sM)^(-1/2))*(exp(-1/2*(x(i,:)-mM)*inv(sM)*(x(i,:)-mM)'));
-%     den2 = pie(2)*(norm(2*pi*sF)^(-1/2))*(exp(-1/2*(x(i,:)-mF)*inv(sF)*(x(i,:)-mF)'));
-%     posteriorFM(i) = num/(den1+den2);
-%end
 
-classified(run) = (sum(posteriorM(1:SPLIT_M) > posteriorF(1:SPLIT_M))+sum(posteriorM(SPLIT_M+1:end) < posteriorF(SPLIT_M+1:end))) /(SPLIT_M+SPLIT_F)
+classified(run) = (sum(postM(1:SPLIT_M) > postF(1:SPLIT_M))...
+                + sum(postM(SPLIT_M+1:end) < postF(SPLIT_M+1:end)))...
+                / (SPLIT_M+SPLIT_F);
 
 end
 
 %% GRAPH
 
-figure(5)
+figure(1)
 scatter(testMales(:,1),testMales(:,2),100, '.')
 hold on
 grid minor
