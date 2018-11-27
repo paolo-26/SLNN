@@ -47,44 +47,49 @@ class2test = class2(SPLIT2+1:end,:);
 class1test = class1test - mean(class1train);  % Centering the data (column means)
 class2test = class2test - mean(class2train);  % Centering the data (column means)
 
-N = C1 + C2
-c1 = 0;
-for k = 1:220
-    c1 = c1 + class1(k,:)'*class1(k,:);
+N = SPLIT1 + SPLIT2
+c = 0;
+x1 = [class1train' class2train']
+for k = 1:SPLIT1+SPLIT2
+    c = c + x1(:,k) * x1(:,k)';
 end
-%c1 = c1/C1;
 
-c2 = 0;
-for k = 1:220
-    c2 = c2 + class2(k,:)'*class2(k,:);
-end
-%c2 = c1/C2;
-covariance1 = (c1 + c2)/N;
-
-
-%N1 = length(class1(:,1));
-sigmaHat1 = class1(:,:)' * class1(:,:);
-
-%N2 = length(class2(:,1));
-sigmaHat2 = class2(:,:)' * class2(:,:);
-
-covariance1 = 1/N * (sigmaHat1+sigmaHat2)
-covariance2 = sigmaHat1 + sigmaHat2;
-
-%covariance3 = cov(class1) + cov(class2);
+covariance1 = c/N;
+covariance2 = 1/N * x1(:,:) * x1(:,:)';
+covariance3 = cov([class1train; class2train]);
 
 [V,D] = eig(covariance1);
 
 o = 1
-for K=10:200
-    What = V(:,end-K+1:end);
-    z = What'*class1test';
-    xHat = What*z;
-    xHat = xHat';
-    MSE(o) = norm(xHat - class1test)^2/71;
+test = [class1test ; class2test]'
+
+for K=1:220
+    W = V(:,end-K+1:end);
+    z = W'*test;
+    xHat = W*z;
+    MSE(o) = norm(xHat - test)^2/length(test);
     o = o + 1;
 end
 
+figure(1)
+hold on
 plot(MSE)
+grid on
+title('Mean squared error, the real one')
+legend('MSE (test)')
 grid minor
-legend('MSE, the real one')
+xlim([1 220])
+xlabel('K')
+ylabel('MSE')
+
+val = diag(D)
+val(:,2)=1:length(D)
+val = sortrows(val,1, 'descend')
+index = [val(1:3,2)]
+
+figure(2)
+plot(V(:,index))
+grid on
+grid minor
+title('Most important eigenvectors')
+xlim([1 220])
