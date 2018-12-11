@@ -26,6 +26,7 @@ def train_and_test(_):
 
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
+    batch_xs , batch_ys = mnist.train.next_batch(BATCH_SIZE)
 
 #################################################################################
 ############################	YOUR CODE HERE   ################################
@@ -82,7 +83,6 @@ def train_and_test(_):
     h3 = tf.matmul(out, W3) + b3
     out = tf.nn.relu(h3)
 
-
     # define loss function
     loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=out)
 
@@ -98,8 +98,13 @@ def train_and_test(_):
     train_step = optimizer.minimize(loss)
 
     # measure accuracy on the batch and make it a summary for tensorboard
-    correct_prediction = tf.equal(tf.argmax(loss,1), tf.argmax(y,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    index = tf.argmax(out[0:100], axis=1)
+    real = tf.argmax(batch_ys, axis=1)
+    # print("||||||||||", index)
+    # print("||||||||||", real)
+    accuracy = tf.equal(tf.where(index), real)
+
+    #accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 
     # create session
@@ -112,7 +117,7 @@ def train_and_test(_):
     tf.global_variables_initializer().run()
 
     # training iterations: fetch training batch and run
-    batch_xs , batch_ys = mnist.train.next_batch(BATCH_SIZE)
+
 #    sess.run(train_step, feed_dict={x:batch_xs, y:batch_ys})
 
     # after training fetch test set and measure accuracy
