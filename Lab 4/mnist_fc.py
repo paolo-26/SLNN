@@ -13,6 +13,8 @@ NUM_PIXELS = 784
 NUM_CLASSES = 10
 BATCH_SIZE = 100
 TRAIN_STEPS = 10
+HID_1 = 15
+HID_2 = 20
 
 
 def train_and_test(_):
@@ -33,23 +35,23 @@ def train_and_test(_):
     y = tf.placeholder(tf.float32, shape=(BATCH_SIZE, NUM_CLASSES), name='hot_vector')
 
     # define variables for weights and biases of the three fully connected layers
-    W1 = tf.Variable(tf.truncated_normal(shape=(NUM_PIXELS, NUM_CLASSES),
+    W1 = tf.Variable(tf.truncated_normal(shape=(NUM_PIXELS, HID_1),
                                          stddev=1/NUM_PIXELS),
                                          name='weights1')
 
-    W2 = tf.Variable(tf.truncated_normal(shape=(NUM_CLASSES, 15),
+    W2 = tf.Variable(tf.truncated_normal(shape=(HID_1, HID_2),
                                          stddev=1/NUM_PIXELS),
                                          name='weights2')
 
-    W3 = tf.Variable(tf.truncated_normal(shape=(15, NUM_CLASSES),
+    W3 = tf.Variable(tf.truncated_normal(shape=(HID_2, NUM_CLASSES),
                                          stddev=1/NUM_PIXELS),
                                          name='weights3')
 
-    b1 = tf.Variable(tf.truncated_normal(shape=(1, NUM_CLASSES),
+    b1 = tf.Variable(tf.truncated_normal(shape=(1, HID_1),
                                          stddev=1/NUM_PIXELS),
                                          name='bias1')
 
-    b2 = tf.Variable(tf.truncated_normal(shape=(1, 15),
+    b2 = tf.Variable(tf.truncated_normal(shape=(1, HID_2),
                                          stddev=1/NUM_PIXELS),
                                          name='bias2')
 
@@ -58,22 +60,31 @@ def train_and_test(_):
                                          name='bias3')
 
     # computation graph
-    print("OK --------------- ")
+    """ inp1: [BATCH_SIZE x 784]
+        W:    [704        x 15]
+        out:  [BATCH_SIZE x 15]
+
+        inp2: [BATCH_SIZE x 15]
+        W:    [15         x 20]
+        out:  [BATCH_SIZE x 20]
+
+        inp3: [BATCH_SIZE x 20]
+        W:    [20         x 10]
+        out:  [BATCH_SIZE x 10]
+    """
 
     h1 = tf.matmul(x, W1) + b1
     out = tf.nn.relu(h1)
-    print("OK --------------- ")
 
     h2 = tf.matmul(out, W2) + b2
     out = tf.nn.relu(h2)
-    print("OK --------------- ")
 
     h3 = tf.matmul(out, W3) + b3
     out = tf.nn.relu(h3)
 
 
     # define loss function
-    loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=h3)
+    loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=out)
 
     # make the loss a "summary" to visualise it in tensorboard
     tf.summary.scalar('loss', loss)
@@ -102,7 +113,7 @@ def train_and_test(_):
 
     # training iterations: fetch training batch and run
     batch_xs , batch_ys = mnist.train.next_batch(BATCH_SIZE)
-    sess.run(train_step, feed_dict={x:batch_xs, y:batch_ys})
+#    sess.run(train_step, feed_dict={x:batch_xs, y:batch_ys})
 
     # after training fetch test set and measure accuracy
     accuracy_value = sess.run(accuracy, feed_dict={x: batch_xs, y:batch_ys})
