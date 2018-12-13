@@ -10,6 +10,8 @@ Laboratory activities.
 ## Software
 
 * MATLAB
+* Python
+* TensorFlow
 
 ## Authors
 
