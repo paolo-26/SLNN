@@ -5,6 +5,8 @@ indian_pines = data.indian_pines;
 indian_pines_gt = data.indian_pines_gt;
 C1 = 1428;  
 C2 = 972;
+t1 = 2
+t2 = 10
 N_SPECTR = 220;
 
 SPLIT = 0.75
@@ -17,7 +19,7 @@ n=0;
 class1 = zeros(C1, N_SPECTR);
 for i = 1:size(indian_pines, 1)
     for j = 1:size(indian_pines, 2)
-        if indian_pines_gt(i,j)== 2 % class index
+        if indian_pines_gt(i,j)== t1 % class index
             n = n + 1;
             class1(n,:) = indian_pines(i,j,:);
         end
@@ -28,7 +30,7 @@ n = 0;
 class2 = zeros(C2, N_SPECTR);
 for i = 1:size(indian_pines, 1)
     for j = 1:size(indian_pines, 2)
-        if indian_pines_gt(i,j)== 10 % class index
+        if indian_pines_gt(i,j)== t2 % class index
             n = n + 1;
             class2(n,:) = indian_pines(i,j,:);
         end
@@ -70,6 +72,8 @@ covariance3 = cov([class1train; class2train]);
 o = 1;
 %test = [class1test ; class2test]';
 test = classTest - mTrain';
+classTrain = classTrain';
+train = classTrain - mTrain';
 
 
 %xHat = sqrt(inv(Lambda))*W'*xHat;
@@ -80,12 +84,27 @@ for K=1:220
     %z = sqrt(inv(Lambda))*W'*test;  % Whitening
     xHat = W*z + mTrain';
     MSE(o) = (norm(xHat - (test + mTrain')))^2/length(test);
+    
+    
+    %Lambda = D(end-K+1:end, end-K+1:end);
+    %W = V(:,end-K+1:end);
+    %z = W'*train;
+    %z = sqrt(inv(Lambda))*W'*train;  % Whitening
+    %xHat_train = W*z + mTrain';
+    %MSE_train(o) = (norm(xHat_train - (train + mTrain')))^2/length(train);    
+    
+    %m1 = mean(xHat_train(:,1:SPLIT1)');
+    %m2 = mean(xHat_train(:,SPLIT1+1:end)');
+    
     o = o + 1;
+    
+    
 end
 
 figure(1)
 hold on
 semilogy(MSE)
+%semilogy(MSE_train)
 grid on
 title('Mean squared error, the real one')
 legend('MSE (test)')
@@ -126,7 +145,11 @@ for k = 1:length(classTest)
     cl(k) = sign(w*(classTest(:,k)'-x0)');
     ppp(k) = w*(classTest(:,k)'-x0)';
 end
+figure(98)
+plot(ppp)
+title('no PCA')
 acc = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
+display(['Classes: ', num2str(t1), ' ', num2str(t2)])
 display(['Accuracy without PCA: ', num2str(acc*100), '%'])
 figure(10)
 subplot(2,1,1)
@@ -140,41 +163,68 @@ title('Original data')
 
 
 % With PCA
-m1 = m1 - mTrain;
-m2 = m2 - mTrain;
-x0 = 0.5 * (m1+m2);
-w = m2 - m1;
 
-figure(12)
-hold on
-plot(m1)
-plot(m2)
-plot(w)
-title('Mean vectors in PCA')
-grid on; grid minor
-xlim([1 220])
-legend('Class 1','Class 2','Difference')
+for K = 1:220
+    Lambda = D(end-K+1:end, end-K+1:end);
+    W = V(:,end-K+1:end);
+    z = sqrt(inv(Lambda))*W'*test;  % Whitening
+    xHat = W*z + mTrain';
+    
+    Lambda = D(end-K+1:end, end-K+1:end);
+    W = V(:,end-K+1:end);
+    z = sqrt(inv(Lambda))*W'*train;  % Whitening
+    xHat_train = W*z + mTrain';
 
-K = 50
+    m1 = mean(xHat_train(:,1:SPLIT1)');
+    m2 = mean(xHat_train(:,SPLIT1+1:end)');
+        
 
-xHat = xHat - mTrain';
-for k = 1:length(xHat)
-    cl(k) = sign(w*(xHat(:,k)'-x0)');
-    pp(k) = w*(xHat(:,k)'-x0)';
+    %m1 = m1 - mTrain;
+    %m2 = m2 - mTrain;
+    x0 = 0.5 * (m1+m2);
+    w = m2 - m1;
+
+%     figure(12)
+%     hold on
+%     plot(m1)
+%     plot(m2)
+%     plot(w)
+%     title('Mean vectors in PCA')
+%     grid on; grid minor
+%     xlim([1 220])
+%     legend('Class 1','Class 2','Difference')
+
+
+
+%     xHat = xHat - mTrain';
+    for k = 1:length(xHat)
+        cl(k) = sign(w*(xHat(:,k)'-x0)');
+        pp(k) = w*(xHat(:,k)'-x0)';
+    end
+%     figure(99)
+%     plot(pp)
+%     title('PCA')
+     acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
+%     display(['Accuracy with PCA + whitening (K = ', num2str(K), '): ', num2str(acc*100), '%'])
+% 
+% 
+%     figure(10)
+%     subplot(2,1,2)
+%     plot(cl)
+%     title('PCA')
+% 
+%     figure(11)
+%     subplot(2,1,2)
+%     plot(xHat)
+%     title('xHat')
+    
+
 end
-figure(99)
-plot(pp)
-title('pp')
-acc = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
-display(['Accuracy with PCA: ', num2str(acc*100), '%'])
 
-
-figure(10)
-subplot(2,1,2)
-plot(cl)
-title('PCA')
-
-figure(11)
-subplot(2,1,2)
-plot(xHat)
-title('xHat')
+figure()
+plot(acc)
+title('Accuracy with PCA + whitening')
+xlabel('K')
+ylabel('Accuracy')
+xlim([0,220])
+grid minor
