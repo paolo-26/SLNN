@@ -109,7 +109,7 @@ class1 = test;
 class1(c:end,:) = [];
 
 class2 = test;
-class2(1:c,:) = [];
+class2(1:c-1,:) = [];
 
 scatter(class1(:,1),class1(:,2),'*')
 scatter(class2(:,1),class2(:,2),'*')
