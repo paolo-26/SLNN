@@ -3,15 +3,15 @@ clear; clc; close all;
 data = load('Indian_Pines_Dataset')
 indian_pines = data.indian_pines;
 indian_pines_gt = data.indian_pines_gt;
-C1 = 1428;  
-C2 = 972;
-t1 = 2
-t2 = 10
-N_SPECTR = 220;
 
-SPLIT = 0.75
-SPLIT1 = round(C1*SPLIT)
-SPLIT2 = round(C2*SPLIT)
+C1 = 1428;  % Number of samples of class 1
+C2 = 972;  % Number of samples of class 2
+t1 = 2  % Index of class 1
+t2 = 10  % Index of class 2
+N_SPECTR = 220;  % Number of features
+SPLIT = 0.75  % 75% trainining and 25% test
+SPLIT1 = round(C1*SPLIT)  % Split training-test for class 1
+SPLIT2 = round(C2*SPLIT)  % Split training-test for class 2
 
 
 %% Extract data
@@ -39,80 +39,60 @@ end
 
 class1train = class1(1:SPLIT1,:);
 class1test = class1(SPLIT1+1:end,:);
-
 class2train = class2(1:SPLIT2,:);
 class2test = class2(SPLIT2+1:end,:);
 clear class1 class2
+
 %% Covariance matrix
-classTrain = ([class1train; class2train]);
-mTrain = mean(classTrain);
-m1 = mean(class1train);
-m2 = mean(class2train);
+classTrain = [class1train; class2train]';  % Test set with class 1 and 2
+classTest = [class1test; class2test]';  % Training set with class 1 and 2
+mTrain = mean(classTrain, 2);  % Mean for both classes
+m1 = mean(class1train)';  % Mean for class1
+m2 = mean(class2train)';  % Mean for class2
 %class1test = class1test - m1;  % Centering the data (column means)
 %class2test = class2test - m2;  % Centering the data (column means)
-classTest = [class1test; class2test]';
-figure(9)
-hold on
-%plot(class1test)
-%plot(class2test)
+% figure(9)
+% hold on
+% plot(x)
+% covariance2 = 1/N * x(:,:) * x(:,:)';
+% covariance3 = cov([class1train; class2train]);
+
+%% Covariance matrix on training set
 N = SPLIT1 + SPLIT2;
-c = 0;
-x = [class1train' class2train'];
+cov_mat = 0;
+x = [class1train' class2train']-mTrain;
 for k = 1:SPLIT1+SPLIT2
-    c = c + x(:,k) * x(:,k)';
+    cov_mat = cov_mat + (x(:,k)*x(:,k)')/N;
 end
 
-covariance1 = c/N;
-covariance2 = 1/N * x(:,:) * x(:,:)';
-covariance3 = cov([class1train; class2train]);
-
 %% PCA
-[V,D] = eig(covariance1);  % Eigendecomposition
+[V,D] = eig(cov_mat);  % Eigendecomposition
 
 o = 1;
-%test = [class1test ; class2test]';
-test = classTest - mTrain';
-classTrain = classTrain';
-train = classTrain - mTrain';
-
+test = classTest - mTrain;  % Zero-mean data for PCA
 
 %xHat = sqrt(inv(Lambda))*W'*xHat;
 for K=1:220
     Lambda = D(end-K+1:end, end-K+1:end);
     W = V(:,end-K+1:end);
     z = W'*test;
-    %z = sqrt(inv(Lambda))*W'*test;  % Whitening
-    xHat = W*z + mTrain';
-    MSE(o) = (norm(xHat - (test + mTrain')))^2/length(test);
-    
-    
-    %Lambda = D(end-K+1:end, end-K+1:end);
-    %W = V(:,end-K+1:end);
-    %z = W'*train;
-    %z = sqrt(inv(Lambda))*W'*train;  % Whitening
-    %xHat_train = W*z + mTrain';
-    %MSE_train(o) = (norm(xHat_train - (train + mTrain')))^2/length(train);    
-    
-    %m1 = mean(xHat_train(:,1:SPLIT1)');
-    %m2 = mean(xHat_train(:,SPLIT1+1:end)');
-    
-    o = o + 1;
-    
-    
+    xHat = W*z + mTrain;  % Add mean to reflect original data
+    MSE(o) = (norm(xHat - (classTest)))^2/length(test);
+    o = o + 1;    
 end
 
 figure(1)
 hold on
 semilogy(MSE)
-%semilogy(MSE_train)
 grid on
-title('Mean squared error, the real one')
+title('Mean squared error on test set')
 legend('MSE (test)')
 grid minor
 xlim([1 220])
 xlabel('K')
 ylabel('MSE')
 
+% Find most important eigenvectors
 val = diag(D);
 val(:,2)=1:length(D);
 val = sortrows(val,1, 'descend');
@@ -140,50 +120,66 @@ grid on; grid minor
 xlim([1 220])
 legend('Class 1','Class 2','Difference')
 
-% Without PCA
+% 1. Without PCA on the original data
 for k = 1:length(classTest)
-    cl(k) = sign(w*(classTest(:,k)'-x0)');
-    ppp(k) = w*(classTest(:,k)'-x0)';
+    cl(k) = sign(w'*(classTest(:,k)-x0));
+%     ppp(k) = w'*(classTest(:,k)-x0);
 end
-figure(98)
-plot(ppp)
-title('no PCA')
 acc = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
 display(['Classes: ', num2str(t1), ' ', num2str(t2)])
 display(['Accuracy without PCA: ', num2str(acc*100), '%'])
-figure(10)
-subplot(2,1,1)
-plot(cl)
-title('Without PCA')
 
-figure(11)
-subplot(2,1,1)
-plot(classTest)
-title('Original data')
+% figure(98)
+% plot(ppp)
+% title('no PCA')
+
+% figure(10)
+% subplot(2,1,1)
+% plot(cl)
+% title('Without PCA')
+% figure(11)
+% subplot(2,1,1)
+% plot(classTest)
+% title('Original data')
 
 
-% With PCA
+% 3. With only N retained features
+N = 100;  % Retained features
+for k = 1:length(classTest)
+    cl(k) = sign(w(1:N)'*(classTest(1:N,k)-x0(1:N)));
+end
+acc = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
+display(['Accuracy with ', num2str(N), ' retained features: ', num2str(acc*100), '%'])
+    
 
+% 2. With PCA + whitening
+train = classTrain - mTrain;
 for K = 1:220
+    % PCA + whitening on test set
     Lambda = D(end-K+1:end, end-K+1:end);
     W = V(:,end-K+1:end);
     z = sqrt(inv(Lambda))*W'*test;  % Whitening
-    xHat = W*z + mTrain';
+    xHat = W*z + mTrain;
     
+    % PCA + whitening on training set
     Lambda = D(end-K+1:end, end-K+1:end);
     W = V(:,end-K+1:end);
     z = sqrt(inv(Lambda))*W'*train;  % Whitening
-    xHat_train = W*z + mTrain';
+    xHat_train = W*z + mTrain;
 
-    m1 = mean(xHat_train(:,1:SPLIT1)');
-    m2 = mean(xHat_train(:,SPLIT1+1:end)');
-        
-
-    %m1 = m1 - mTrain;
-    %m2 = m2 - mTrain;
+    % New mean vectors for class1 and class2 on the new training set
+    m1 = mean(xHat_train(:,1:SPLIT1), 2);
+    m2 = mean(xHat_train(:,SPLIT1+1:end), 2);
+    
     x0 = 0.5 * (m1+m2);
     w = m2 - m1;
-
+    
+    for k = 1:length(xHat)
+        cl(k) = sign(w'*(xHat(:,k)-x0));
+%         pp(k) = w'*(xHat(:,k)-x0);
+    end
+    acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
+    
 %     figure(12)
 %     hold on
 %     plot(m1)
@@ -194,34 +190,22 @@ for K = 1:220
 %     xlim([1 220])
 %     legend('Class 1','Class 2','Difference')
 
-
-
-%     xHat = xHat - mTrain';
-    for k = 1:length(xHat)
-        cl(k) = sign(w*(xHat(:,k)'-x0)');
-        pp(k) = w*(xHat(:,k)'-x0)';
-    end
 %     figure(99)
 %     plot(pp)
 %     title('PCA')
-     acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
-%     display(['Accuracy with PCA + whitening (K = ', num2str(K), '): ', num2str(acc*100), '%'])
-% 
-% 
+
 %     figure(10)
 %     subplot(2,1,2)
 %     plot(cl)
 %     title('PCA')
 % 
-%     figure(11)
-%     subplot(2,1,2)
-%     plot(xHat)
-%     title('xHat')
-    
-
 end
-
-figure()
+% figure(11)
+% subplot(2,1,2)
+% plot(xHat)
+% title('xHat')
+     
+figure(4)
 plot(acc)
 title('Accuracy with PCA + whitening')
 xlabel('K')
