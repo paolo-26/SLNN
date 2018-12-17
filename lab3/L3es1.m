@@ -4,10 +4,10 @@ data = load('Indian_Pines_Dataset')
 indian_pines = data.indian_pines;
 indian_pines_gt = data.indian_pines_gt;
 
-C1 = 830;  % Number of samples of class 1
-C2 = 386;  % Number of samples of class 2
-t1 = 3  % Index of class 1
-t2 = 15  % Index of class 2
+C1 = 1428;  % Number of samples of class 1
+C2 = 2455;  % Number of samples of class 2
+t1 = 2  % Index of class 1
+t2 = 11  % Index of class 2
 N_SPECTR = 220;  % Number of features
 SPLIT = 0.75  % 75% trainining and 25% test
 SPLIT1 = round(C1*SPLIT)  % Split training-test for class 1
@@ -75,8 +75,8 @@ test = classTest - mTrain;  % Zero-mean data for PCA
 for K=1:220
     Lambda = D(end-K+1:end, end-K+1:end);
     W = V(:,end-K+1:end);
-    z = W'*test;
-    xHat = W*z + mTrain;  % Add mean to reflect original data
+    z_test = W'*test;
+    xHat = W*z_test + mTrain;  % Add mean to reflect original data
     MSE(o) = (norm(xHat - (classTest)))^2/length(test);
     o = o + 1;    
 end
@@ -153,36 +153,85 @@ acc = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) ==
 display(['Accuracy with ', num2str(N), ' retained features: ', num2str(acc*100), '%'])
     
 
-% 2. With PCA + whitening
+% 2. With PCA + whitening.
 train = classTrain - mTrain;
-for K = 1:220
-    % PCA + whitening on test set
-    Lambda = D(end-K+1:end, end-K+1:end);
-    W = V(:,end-K+1:end);
-    z = sqrt(inv(Lambda))*W'*test;  % Whitening
-    xHat = W*z + mTrain;
-    
-    % PCA + whitening on training set
-    Lambda = D(end-K+1:end, end-K+1:end);
-    W = V(:,end-K+1:end);
-    z = sqrt(inv(Lambda))*W'*train;  % Whitening
-    xHat_train = W*z + mTrain;
 
-    % New mean vectors for class1 and class2 on the new training set
-    xHat = xHat - mTrain;
-    xHat_train = xHat_train - mTrain;
-    m1 = mean(xHat_train(:,1:SPLIT1), 2);
-    m2 = mean(xHat_train(:,SPLIT1+1:end), 2);
+% Whitening.
+% x = train;
+% for k = 1:SPLIT1+SPLIT2
+%     cov_mat = cov_mat + (x(:,k)*x(:,k)')/N;
+% end
+% %cov_mat=cov(train');
+% [V,D] = eig(cov_mat);  % Eigendecomposition
+% 
+% 
+% for k =1:length(train)
+%     train(:,k) = inv(D^0.5)*V'*train(:,k);
+% end
+% for k =1:length(test)
+%     test(:,k) = inv(D^0.5)*V'*test(:,k);
+% end
+% % cov_mat=cov(train');
+% 
+% 
+% x = train;
+% for k = 1:SPLIT1+SPLIT2
+%     cov_mat = cov_mat + (x(:,k)*x(:,k)')/N;
+% end
+[V,D] = eig(cov_mat);  % Eigendecomposition
+
+for K = 1:220
+    Lambda = D(end-K+1:end, end-K+1:end);
+    W = V(:,end-K+1:end);
+ 
+    % PCA on test set
+    z_test = (Lambda^-0.5)*W'*test;  % Whitening
+    sigma_test=cov(z_test');  % Equal to identity matrix
+    xHat = W*z_test; % Original data approximation with 0 mean
     
-    sigma=cov(z);
+    % PCA on training set
+    z_train = (Lambda^-0.5)*W'*train;  % Whitening
+    sigma_train=cov(z_train');  % Equal to identity matrix
+    xHat_train = W*z_train; % Original data approximation with 0 mean
+    
+    
+    
+    
+    
+    
+%     % New mean vectors for class1 and class2 on the new training set
+%     m1 = mean(xHat_train(:,1:SPLIT1), 2);
+%     m2 = mean(xHat_train(:,SPLIT1+1:end), 2);
+% 
+%     x0 = 0.5 * (m1+m2);
+%     w = m2 - m1;
+%     
+%     for k = 1:length(xHat)
+%         cl(k) = sign(w'*(xHat(:,k)-x0));
+% %       p_data(k) = w'*(xHat(:,k)-x0);
+%     end
+%     acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
+    
+    
+    
+     % New mean vectors for class1 and class2 on the new training set
+    m1 = mean(z_train(:,1:SPLIT1), 2);
+    m2 = mean(z_train(:,SPLIT1+1:end), 2);
+
     x0 = 0.5 * (m1+m2);
     w = m2 - m1;
     
-    for k = 1:length(xHat)
-        cl(k) = sign(w'*(xHat(:,k)-x0));
-%         pp(k) = w'*(xHat(:,k)-x0);
+    for k = 1:length(z_test)
+        cl(k) = sign(w'*(z_test(:,k)-x0));
+%       p_data(k) = w'*(xHat(:,k)-x0);
     end
-    acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
+    acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);   
+    
+    
+    
+    
+    
+    
     
 %     figure(12)
 %     hold on
@@ -195,7 +244,7 @@ for K = 1:220
 %     legend('Class 1','Class 2','Difference')
 
 %     figure(99)
-%     plot(pp)
+%     plot(p_data)
 %     title('PCA')
 
 %     figure(10)
