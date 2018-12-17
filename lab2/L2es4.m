@@ -1,6 +1,6 @@
 clear; close all; clc
 
-data = load('heightWeight')
+data = load('heightWeight');
 SPLIT_M = 25
 SPLIT_F = 40
 
@@ -59,6 +59,7 @@ if run == 3  % Shared covariance matrix
     firstTerm = firstTerm/length(shared);
     secondTerm = mM.*mM';
     sM = firstTerm - secondTerm;
+    SS = cov([trainFemales; trainMales]);
 end
 
 % MLE covariance (females).
@@ -104,10 +105,26 @@ for i = 1:length(x)
     postF(i) = num/(den1+den2);  % Prob. of being female
 end
 
+if run == 1 || run == 2
 classified(run) = (sum(postM(1:SPLIT_M) > postF(1:SPLIT_M))...
                 + sum(postM(SPLIT_M+1:end) < postF(SPLIT_M+1:end)))...
                 / (SPLIT_M+SPLIT_F);
+            
+classified(run)
+end
 
+
+
+if run == 3
+   w = inv(SS)*(mM-mF)' ;
+   x0 = 0.5*(mM+mF)';
+   classified = sign(w'*([testFemales; testMales]-x0')');
+
+
+class = (sum(classified(1:length(testFemales))==-1)+...
+        sum(classified(length(testFemales)+1:end)==1))/65
+    
+end
 end
 
 %% GRAPH

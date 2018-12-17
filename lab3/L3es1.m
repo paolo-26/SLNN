@@ -1,13 +1,13 @@
 clear; clc; close all;
 
-data = load('Indian_Pines_Dataset')
+data = load('Indian_Pines_Dataset');
 indian_pines = data.indian_pines;
 indian_pines_gt = data.indian_pines_gt;
 
 C1 = 1428;  % Number of samples of class 1
-C2 = 2455;  % Number of samples of class 2
+C2 = 972;  % Number of samples of class 2
 t1 = 2  % Index of class 1
-t2 = 11  % Index of class 2
+t2 = 10  % Index of class 2
 N_SPECTR = 220;  % Number of features
 SPLIT = 0.75  % 75% trainining and 25% test
 SPLIT1 = round(C1*SPLIT)  % Split training-test for class 1
@@ -109,7 +109,7 @@ xlim([1 220])
 %% Optional part
 x0 = 0.5 * (m1+m2);
 % w = m2 - m1;
-w = inv(cov_mat)*m2 - m1;
+w = inv(cov_mat)*(m2 - m1);
 
 figure(3)
 hold on
@@ -121,7 +121,7 @@ grid on; grid minor
 xlim([1 220])
 legend('Class 1','Class 2','Difference')
 
-% 1. Without PCA on the original data
+%% 1. Without PCA on the original data
 for k = 1:length(classTest)
     cl(k) = sign(w'*(classTest(:,k)-x0));
 %     ppp(k) = w'*(classTest(:,k)-x0);
@@ -144,8 +144,8 @@ display(['Accuracy without PCA: ', num2str(acc*100), '%'])
 % title('Original data')
 
 
-% 3. With only N retained features
-N = 100;  % Retained features
+%% 3. With only N retained features
+N = 220;  % Retained features
 for k = 1:length(classTest)
     cl(k) = sign(w(1:N)'*(classTest(1:N,k)-x0(1:N)));
 end
@@ -153,7 +153,7 @@ acc = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) ==
 display(['Accuracy with ', num2str(N), ' retained features: ', num2str(acc*100), '%'])
     
 
-% 2. With PCA + whitening.
+%% 2. With PCA + whitening.
 train = classTrain - mTrain;
 
 % Whitening.
@@ -185,47 +185,54 @@ for K = 1:220
     W = V(:,end-K+1:end);
  
     % PCA on test set
-    z_test = (Lambda^-0.5)*W'*test;  % Whitening
+    z_test = (inv(Lambda^0.5))*W'*test;  % Whitening
+    %z_test = W'*test;  % Whitening
     sigma_test=cov(z_test');  % Equal to identity matrix
     xHat = W*z_test; % Original data approximation with 0 mean
+    %xHat = inv(D^0.5)*V*xHat; % Original data approximation with 0 mean
+    %sigma_xHat = cov(xHat);
     
     % PCA on training set
-    z_train = (Lambda^-0.5)*W'*train;  % Whitening
+    z_train = (inv(Lambda^0.5))*W'*train;  % Whitening
+    %z_train = W'*train;  % Whitening
     sigma_train=cov(z_train');  % Equal to identity matrix
     xHat_train = W*z_train; % Original data approximation with 0 mean
+    %xHat_train = inv(D^0.5)*V'*xHat_train;
+    %sigma_xHat_train = cov(xHat_train);
     
-    
-    
-    
-    
-    
-%     % New mean vectors for class1 and class2 on the new training set
-%     m1 = mean(xHat_train(:,1:SPLIT1), 2);
-%     m2 = mean(xHat_train(:,SPLIT1+1:end), 2);
-% 
-%     x0 = 0.5 * (m1+m2);
-%     w = m2 - m1;
-%     
-%     for k = 1:length(xHat)
-%         cl(k) = sign(w'*(xHat(:,k)-x0));
-% %       p_data(k) = w'*(xHat(:,k)-x0);
-%     end
-%     acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
-    
-    
-    
-     % New mean vectors for class1 and class2 on the new training set
-    m1 = mean(z_train(:,1:SPLIT1), 2);
-    m2 = mean(z_train(:,SPLIT1+1:end), 2);
+    % New mean vectors for class1 and class2 on the new training set
+    m1 = mean(xHat_train(:,1:SPLIT1), 2);
+    m2 = mean(xHat_train(:,SPLIT1+1:end), 2);
 
     x0 = 0.5 * (m1+m2);
     w = m2 - m1;
     
-    for k = 1:length(z_test)
-        cl(k) = sign(w'*(z_test(:,k)-x0));
+    for k = 1:length(xHat_train)
+        cl(k) = sign(w'*(xHat_train(:,k)-x0));
 %       p_data(k) = w'*(xHat(:,k)-x0);
     end
-    acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);   
+    acc(K) = (sum(cl(1:length(class1train)) == -1) + sum(cl(length(class1train)+1:end) == +1))/length(train);
+    clear cl
+    
+    for k = 1:length(xHat)    
+        cl(k) = sign(w'*(xHat(:,k)-x0));
+%       p_data(k) = w'*(xHat(:,k)-x0);
+    end
+    acc2(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);
+    
+    
+     % New mean vectors for class1 and class2 on the new training set
+%     m1 = mean(z_train(:,1:SPLIT1), 2);
+%     m2 = mean(z_train(:,SPLIT1+1:end), 2);
+% 
+%     x0 = 0.5 * (m1+m2);
+%     w = m2 - m1;
+%     
+%     for k = 1:length(z_test)
+%         cl(k) = sign(w'*(z_test(:,k)-x0));
+% %       p_data(k) = w'*(xHat(:,k)-x0);
+%     end
+%     acc(K) = (sum(cl(1:length(class1test)) == -1) + sum(cl(length(class1test)+1:end) == +1))/length(test);   
     
     
     
@@ -259,9 +266,13 @@ end
 % title('xHat')
      
 figure(4)
-plot(acc)
+hold on
+plot(acc, 'linewidth', 1.5)
+plot(acc2, 'linewidth', 1.5)
 title('Accuracy with PCA + whitening')
 xlabel('K')
 ylabel('Accuracy')
 xlim([0,220])
 grid minor
+legend('Train','test')
+%ylim([0,1])
