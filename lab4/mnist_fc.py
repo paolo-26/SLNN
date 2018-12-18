@@ -4,17 +4,17 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 import sys
 import argparse
-
+import numpy as np
 # global flags for convenience
 FLAGS = None
 
 # Parameters
 NUM_PIXELS = 784
 NUM_CLASSES = 10
-BATCH_SIZE = 100
-TRAIN_STEPS = 10
-HID_1 = 15
-HID_2 = 20
+BATCH_SIZE = 50
+TRAIN_STEPS = 36000
+HID_1 = 100
+HID_2 = 50
 
 
 def train_and_test(_):
@@ -26,48 +26,45 @@ def train_and_test(_):
 
     # Import data
     mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
-    batch_xs , batch_ys = mnist.train.next_batch(BATCH_SIZE)
+
 
 #################################################################################
 ############################	YOUR CODE HERE   ################################
 
     # define placeholders for batch of training images and labels
-    x = tf.placeholder(tf.float32, shape=(BATCH_SIZE, NUM_PIXELS), name='input_data')
-    y = tf.placeholder(tf.float32, shape=(BATCH_SIZE, NUM_CLASSES), name='hot_vector')
+    x = tf.placeholder(tf.float32, shape=(None, NUM_PIXELS), name='input_data')
+    y = tf.placeholder(tf.float32, shape=(None, NUM_CLASSES), name='hot_vector')
 
     # define variables for weights and biases of the three fully connected layers
     W1 = tf.Variable(tf.truncated_normal(shape=(NUM_PIXELS, HID_1),
-                                         stddev=1/NUM_PIXELS),
+                                         stddev=0.1),
                                          name='weights1')
 
     W2 = tf.Variable(tf.truncated_normal(shape=(HID_1, HID_2),
-                                         stddev=1/NUM_PIXELS),
+                                         stddev=0.1),
                                          name='weights2')
 
     W3 = tf.Variable(tf.truncated_normal(shape=(HID_2, NUM_CLASSES),
-                                         stddev=1/NUM_PIXELS),
+                                         stddev=0.1),
                                          name='weights3')
 
-    b1 = tf.Variable(tf.truncated_normal(shape=(1, HID_1),
-                                         stddev=1/NUM_PIXELS),
+    b1 = tf.Variable(tf.constant(0.1, shape=(HID_1,)),
                                          name='bias1')
 
-    b2 = tf.Variable(tf.truncated_normal(shape=(1, HID_2),
-                                         stddev=1/NUM_PIXELS),
+    b2 = tf.Variable(tf.constant(0.1, shape=(HID_2,)),
                                          name='bias2')
 
-    b3 = tf.Variable(tf.truncated_normal(shape=(1, NUM_CLASSES),
-                                         stddev=1/NUM_PIXELS),
+    b3 = tf.Variable(tf.constant(0.1, shape=(NUM_CLASSES,)),
                                          name='bias3')
 
     # computation graph
-    """ inp1: [BATCH_SIZE x 784]
-        W:    [704        x 15]
-        out:  [BATCH_SIZE x 15]
+    """ inp1: [BATCH_SIZE x  784]
+        W:    [704        x Hid1]
+        out:  [BATCH_SIZE x Hid1]
 
-        inp2: [BATCH_SIZE x 15]
-        W:    [15         x 20]
-        out:  [BATCH_SIZE x 20]
+        inp2: [BATCH_SIZE x Hid1]
+        W:    [Hid1       x Hid2]
+        out:  [BATCH_SIZE x Hid2]
 
         inp3: [BATCH_SIZE x 20]
         W:    [20         x 10]
@@ -75,16 +72,18 @@ def train_and_test(_):
     """
 
     h1 = tf.matmul(x, W1) + b1
-    out = tf.nn.relu(h1)
+    out1 = tf.nn.relu(h1)
 
-    h2 = tf.matmul(out, W2) + b2
-    out = tf.nn.relu(h2)
+    h2 = tf.matmul(out1, W2) + b2
+    out2 = tf.nn.relu(h2)
 
-    h3 = tf.matmul(out, W3) + b3
-    out = tf.nn.relu(h3)
+    h3 = tf.matmul(out2, W3) + b3
+    out = h3
 
     # define loss function
     loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=out)
+    loss = tf.reduce_mean(loss, axis=0)
+
 
     # make the loss a "summary" to visualise it in tensorboard
     tf.summary.scalar('loss', loss)
@@ -98,13 +97,12 @@ def train_and_test(_):
     train_step = optimizer.minimize(loss)
 
     # measure accuracy on the batch and make it a summary for tensorboard
-    index = tf.argmax(out[0:100], axis=1)
-    real = tf.argmax(batch_ys, axis=1)
-    # print("||||||||||", index)
-    # print("||||||||||", real)
-    accuracy = tf.equal(tf.where(index), real)
-
-    #accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    a = tf.argmax(y, axis=1)
+    b = tf.argmax(out, axis=1)
+    acc = tf.equal(a, b)
+    acc = tf.cast(acc, tf.float32)
+    accuracy = tf.reduce_mean(acc)
+    tf.summary.scalar('accuracy', accuracy)
 
 
     # create session
@@ -112,27 +110,25 @@ def train_and_test(_):
 
     # merge summaries for tensorboard
     merged = tf.summary.merge_all()
+    train_writer = tf.summary.FileWriter(FLAGS.log_dir + '/train', sess.graph)
 
     # initialize variables
     tf.global_variables_initializer().run()
+    #accuracy_value = sess.run(accuracy, feed_dict={x: batch_xs, y:batch_ys})
 
-    # training iterations: fetch training batch and run
 
-#    sess.run(train_step, feed_dict={x:batch_xs, y:batch_ys})
-
-    # after training fetch test set and measure accuracy
-    accuracy_value = sess.run(accuracy, feed_dict={x: batch_xs, y:batch_ys})
 ###################################################################################
 
-    train_writer = tf.summary.FileWriter(FLAGS.log_dir + '/train', sess.graph)
-    summary_train = sess.run([merged, train_step], feed_dict={x:batch_xs, y:batch_ys})
-    train_writer.add_summary(summary_train, i)
+    for i in range(1,TRAIN_STEPS):
+        batch_xs , batch_ys = mnist.train.next_batch(BATCH_SIZE)
+        summary_train, _ = sess.run([merged, train_step], feed_dict={x:batch_xs, y:batch_ys})
+        train_writer.add_summary(summary_train, i)
 
-
-
+    batch_xs , batch_ys = mnist.test.next_batch(10000)
+    test_accuracy = sess.run(accuracy, feed_dict={x:batch_xs, y:batch_ys})
+    print('Test accuracy: %4.f' % test_accuracy)
 
 if __name__ == '__main__':
-
     # use nice argparse module to aprte cli arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, default='./data_dir/', help='Directory for training data')
