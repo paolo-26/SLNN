@@ -1,5 +1,5 @@
 close all; clc; clear
-data = load('heightWeight.mat')
+data = load('heightWeight.mat');
 
 cartaDaZucchero = [137; 207; 240]/255;  % Color for plots
 ametista = [153; 102; 204]/255;  % Color for plots
@@ -74,6 +74,8 @@ firstTerm = firstTerm/length(male);
 secondTerm = mMales.*mMales';
 sigmaMales = firstTerm - secondTerm
 
+%sigmaMales = cov(male);
+
 %% MLE covariance (females).
 firstTerm = zeros(2);  % 2x2 matrix of zeros
 for i = 1:length(female)
@@ -82,6 +84,8 @@ end
 firstTerm = firstTerm/length(female);
 secondTerm = mFemales.*mFemales';
 sigmaFemales = firstTerm - secondTerm
+
+%sigmaFemales = cov(female);
 
 %% Multivariate gaussian plot (males)
 figure(4)

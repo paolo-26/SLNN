@@ -1,7 +1,7 @@
 clc; clear; close all;
 cartadazucchero = [137; 207; 240]/255;
 ametista = [153; 102; 204]/255;
-data = load('XwindowsDocData.mat')
+data = load('XwindowsDocData.mat');
 err = 0.05
 
 train = [sum(data.ytrain == 1) sum(data.ytrain == 2)];

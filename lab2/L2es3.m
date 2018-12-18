@@ -1,5 +1,5 @@
 clc; clear; close all;
-data = load('XwindowsDocData.mat')
+data = load('XwindowsDocData.mat');
 
 train = [sum(data.ytrain == 1) sum(data.ytrain == 2)];
 test = [sum(data.ytest == 1) sum(data.ytest == 2)];
@@ -9,6 +9,7 @@ theta(:,2) = sum(data.xtrain(train(2)+1:end,:) == 1)/train(2);
 pie = [train(1)/length(data.ytrain);
        train(2)/length(data.ytrain)]
 
+   theta = full(theta)
 for k = 1:length(data.xtrain)
     resTrain(k,:) = sum(log(theta(find(data.xtrain(k,:)==1),:))) +...
         sum(log(1-theta(find(data.xtrain(k,:)==0),:))) + log(pie(1));
@@ -27,10 +28,21 @@ acc(2) = sum(classesTest == data.ytest)/length(data.ytest)*100;
 
 %% Optional part
 
+% for j = 1:length(theta)
+%     thetaJ = sum(pie.*theta(j,:)');
+%     I(j) = sum(theta(j,:).*pie(1,:).*log((theta(j,:)+eps)/(thetaJ+eps))+...
+%         (1-theta(j,:)).*pie(1,:).*log((1-theta(j,:)+eps)/(1-thetaJ+eps)));
+% end
+
+I = zeros(1,600)
+
+
 for j = 1:length(theta)
-    thetaJ = sum(pie.*theta(j,:)');
-    I(j) = sum(theta(j,:).*pie(1,:).*log((theta(j,:)+eps)/(thetaJ+eps))+...
-        (1-theta(j,:)).*pie(1,:).*log((1-theta(j,:)+eps)/(1-thetaJ+eps)));
+   thetaJ = sum(pie.*theta(j,:)');
+   thetaJ2(j) = thetaJ
+   for class=1:2
+    I(j) = I(j) + theta(j,class)*pie(class,1)*log((theta(j,class)+eps)/(thetaJ+eps))+(1-theta(j,class))*pie(class,1)*log((1-theta(j,class)+eps)/(1-thetaJ+eps));
+   end
 end
 
 I = I';  % Make I a column vector
@@ -43,14 +55,25 @@ for K = 1:600  % Accuracy for each K
 features = I(1:K,2);  % Most important words
 
 for k = 1:length(data.xtrain)
-    resTrain(k,:) = sum(log(theta(features(data.xtrain(k,features)==1),:))) +...
-        sum(log(1-theta(features(data.xtrain(k,features)==0),:))) + log(pie(1));
+    resTrain(k,1) = sum(log(theta(features(data.xtrain(k,features)==1),1))) +...
+        sum(log(1-theta(features(data.xtrain(k,features)==0),1)));% + log(pie(1));
+end
+
+for k = 1:length(data.xtrain)
+    resTrain(k,2) = sum(log(theta(features(data.xtrain(k,features)==1),2))) +...
+        sum(log(1-theta(features(data.xtrain(k,features)==0),2)));% + log(pie(1));
 end
 
 for k = 1:length(data.xtest)
-    resTest(k,:) = sum(log(theta(features(data.xtest(k,features)==1),:))) +...
-        sum(log(1-theta(features(data.xtest(k,features)==0),:))) + log(pie(1));
+    resTest(k,1) = sum(log(theta(features(data.xtest(k,features)==1),1))) +...
+        sum(log(1-theta(features(data.xtest(k,features)==0),1)));% + log(pie(1));
 end
+
+for k = 1:length(data.xtest)
+    resTest(k,2) = sum(log(theta(features(data.xtest(k,features)==1),2))) +...
+        sum(log(1-theta(features(data.xtest(k,features)==0),2)));% + log(pie(1));
+end
+
 
 classesTrain = (resTrain(:,1) < resTrain(:,2)) + 1;  % Choose class
 classesTest = (resTest(:,1) < resTest(:,2)) + 1;  % Choose class
