@@ -88,9 +88,9 @@ def train_and_test(_):
     # make the loss a "summary" to visualise it in tensorboard
     tf.summary.scalar('loss', loss)
 
-    tf.summary.histogram('weights1', W1)
-    tf.summary.histogram('weights2', W2)
-    tf.summary.histogram('weights3', W3)
+    # tf.summary.histogram('weights1', W1)
+    # tf.summary.histogram('weights2', W2)
+    # tf.summary.histogram('weights3', W3)
 
     # define the optimizer and what is optimizing
     optimizer = tf.train.GradientDescentOptimizer(0.5)
@@ -126,7 +126,7 @@ def train_and_test(_):
 
     batch_xs , batch_ys = mnist.test.next_batch(10000)
     test_accuracy = sess.run(accuracy, feed_dict={x:batch_xs, y:batch_ys})
-    print('Test accuracy: %4.f' % test_accuracy)
+    print('Test accuracy: %.4f' % test_accuracy)
 
 if __name__ == '__main__':
     # use nice argparse module to aprte cli arguments
