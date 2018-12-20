@@ -51,15 +51,23 @@ if run == 2
 end
 
 if run == 3  % Shared covariance matrix
+    shared = [trainMales; trainFemales];
+    mS = 0;
+    for i = 1:length(shared)
+        mS = mS + shared(i,:);
+    end
+    mS = mS/length(shared);  % shared mean
+
     firstTerm = zeros(2);  % 2x2 matrix of zeros
     shared = [trainMales; trainFemales];
     for i = 1:length(shared)
         firstTerm = firstTerm + shared(i,:)'*shared(i,:); 
     end
     firstTerm = firstTerm/length(shared);
-    secondTerm = mM.*mM';
-    sM = firstTerm - secondTerm;
-    SS = cov([trainFemales; trainMales]);
+    secondTerm = (mS).*(mS)';
+    sharedSigma = firstTerm - secondTerm;  % shared sigma
+    
+    %sharedSigma = cov([trainFemales; trainMales]);
 end
 
 % MLE covariance (females).
@@ -110,19 +118,22 @@ classified(run) = (sum(postM(1:SPLIT_M) > postF(1:SPLIT_M))...
                 + sum(postM(SPLIT_M+1:end) < postF(SPLIT_M+1:end)))...
                 / (SPLIT_M+SPLIT_F);
             
-classified(run)
+display(['Accuracy ', num2str(run),': ',...
+        num2str(classified(run)*100), ' %'])
 end
 
 
 
 if run == 3
-   w = inv(SS)*(mM-mF)' ;
+   sharedTest = [testFemales; testMales];
+   w = inv(sharedSigma)*(mM-mF)' ;
    x0 = 0.5*(mM+mF)';
    classified = sign(w'*([testFemales; testMales]-x0')');
-
-
-class = (sum(classified(1:length(testFemales))==-1)+...
-        sum(classified(length(testFemales)+1:end)==1))/65
+   class = (sum(classified(1:length(testFemales))==-1)+...
+            sum(classified(length(testFemales)+1:end)==1))...
+            /length(sharedTest);
+   display(['Accuracy ', num2str(run),': ',...
+        num2str(class*100), ' %'])
     
 end
 end
