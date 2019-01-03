@@ -10,8 +10,8 @@ female = data.heightWeightData(data.heightWeightData(:,1) == 2,2:end);
 %% Scatter plot (males and females)
 figure(1)
 hold on
-scatter(male(:,1),male(:,2),'^b')
-scatter(female(:,1),female(:,2),'vm')
+scatter(male(:,1),male(:,2),'xb')
+scatter(female(:,1),female(:,2),'om')
 grid on
 grid minor
 xlabel('Height (cm)')

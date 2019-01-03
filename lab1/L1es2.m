@@ -54,7 +54,7 @@ end
 
 figure(1)
 hold on
-plot(rangeK,1-accuracy,'.-')
+plot(rangeK,1-accuracy,'.-', 'linewidth', 2)
 ylabel('Misclassification rate')
 xlabel('Number of neighbors \itk')
 grid on
@@ -77,8 +77,8 @@ for k=rangeK
     c=c+1;
 end
 
-plot(rangeK,1 - accuracy2,'.-')
+plot(rangeK,1 - accuracy2,'.-', 'linewidth', 2)
 legend('Training set', 'Test set', 'location', 'southeast')
 %ylim([0 1])
-xticks([rangeK(1:9:end)])
+%xticks([rangeK(1:9:end)])
 xlim([0,split + 1])
