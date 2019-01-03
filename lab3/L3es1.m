@@ -83,7 +83,7 @@ end
 
 figure(1)
 hold on
-semilogy(MSE)
+semilogy(MSE, 'linewidth', 2)
 grid on
 title('Mean squared error on test set')
 legend('MSE (test)')

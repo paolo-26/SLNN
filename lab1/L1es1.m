@@ -36,7 +36,7 @@ end
 
 figure(1)
 hold on
-plot(rangeK,1-accuracy,'o-','MarkerFaceColor','c')
+plot(rangeK,1-accuracy,'o-','MarkerFaceColor','c', 'markersize', 2)
 ylabel('Misclassification rate')
 xlabel('Number of neighbors \itk')
 grid on
@@ -62,10 +62,10 @@ for k=rangeK
     c=c+1;
 end
 
-plot(rangeK,1-accuracy2,'o-','MarkerFaceColor','m')
+plot(rangeK,1-accuracy2,'o-','MarkerFaceColor','m', 'markersize', 2)
 legend('Training set', 'Test set')
-ylim([0 1])
-xticks(rangeK)
+%ylim([0 1])
+%xticks(rangeK)
 
 
 

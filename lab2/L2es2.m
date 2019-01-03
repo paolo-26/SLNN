@@ -24,12 +24,13 @@ grid minor
 
 figure(2)
 hold on
-stem(theta(1:end,1), 'marker','o', 'color',cartadazucchero, 'markersize',4)
+stem(theta(1:end,1), 'marker','o', 'color', 'r', 'markersize',4)
 stem(theta(1:end,2), 'marker','^', 'markersize',4)
 %uninformative = (theta(1:end,1) == theta(1:end,2));
 uninformativeWords = (abs(theta(1:end,1)-theta(1:end,2))) <= err;  % error
 %plot(find(unin2),theta(find(unin2)),'kx','markerfacecolor','k','markersize',10)
 grid on
+grid minor
 legend('Microsoft Windows', 'X Windows', 'location','best')
 title('All features')
 
@@ -38,6 +39,8 @@ hold on
 stem(find(uninformativeWords == 0),theta(find(uninformativeWords == 0),1),'marker','o', 'color','red', 'markersize',4)
 stem(find(uninformativeWords == 0),theta(find(uninformativeWords == 0),2),'marker','^', 'markersize',4)
 grid on
+grid minor
+ylim([0 1])
 title(['Features that differs by at most ', num2str(err)])
 
 %plot(find(unin2),find(unin2),'.')
