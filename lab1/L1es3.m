@@ -1,119 +1,118 @@
-close all; clear; clc;
+clear; clc; close all;
 data = load('localization.mat');
 train = data.traindata;
 test = data.testdata;
-N_CELL = size(data.testdata,3)
+N_CELL = size(data.testdata,3);
 rangeK = 1:120;
 matrixClass = [-1 -1 -1 -1 -1 -1; -1 1 2 3 4 -1; -1 5 6 7 8 -1;...
-    -1 9 10 11 12 -1; -1 13 14 15 16 -1; -1 17 18 19 20 -1;...
-    -1 21 22 23 24 -1; -1 -1 -1 -1 -1 -1];
+               -1 9 10 11 12 -1; -1 13 14 15 16 -1; -1 17 18 19 20 -1;...
+               -1 21 22 23 24 -1; -1 -1 -1 -1 -1 -1];
 
-accuracy = 0;
-o = 1;
-for nRun = 1:2
+for run = 1:1
+    trainError = zeros(1,120);
     for k = rangeK
-        for n = 1:N_CELL  %colonna di partenza
-            for m = 1:N_CELL
-                dist(m,:,:) = pdist2(train(:,:,n)',train(:,:,m)');
-            end
-            for m = 1:5
-                newOrder = reshape(dist(:,:,m)',120,1);
-                c = 1;
-                for i = 1:5:120
-                    newOrder(i:i+4,2) = c;
-                    c = c+1;
+        accuracy = zeros(1,24);
+        for c = 1:24
+           class = zeros(1,5);
+           for m = 1:5
+                dist = zeros(24,5);
+                for C = 1:24
+                    for M = 1:5
+                        % misurazione m della cella c
+                        % confrontato con tutti i vettori M di tutte le celle C
+                        dist(C,M) = norm(train(:,m,c)-train(:,M,C));
+                    end
                 end
-                newOrder = sortrows(newOrder,1);
-                results(m) = mode(newOrder(1:k,2));
-            end
-            accuracy = accuracy + sum(results == n) ;
-            if nRun==2
-                [r,c] = find(matrixClass == n);
-                accuracy = accuracy + sum(matrixClass(r-1,c-1) == results);
-                accuracy = accuracy + sum(matrixClass(r-1,c) == results);
-                accuracy = accuracy + sum(matrixClass(r-1,c+1) == results);
-                accuracy = accuracy + sum(matrixClass(r,c-1) == results);
-                accuracy = accuracy + sum(matrixClass(r,c+1) == results);
-                accuracy = accuracy + sum(matrixClass(r+1,c-1) == results);
-                accuracy = accuracy + sum(matrixClass(r+1,c) == results);
-                accuracy = accuracy + sum(matrixClass(r+1,c+1) == results);
-            end
+                % trovo i k vettori più vicini:
+                d = reshape(dist',1,120);
+                d(2,1:120) = repelem(1:24,5);
+                d = d';
+                d = sortrows(d,1);
+                class(m) = mode(d(1:k,2));
+           end
+           %accuracy = accuracy + sum(class == c);
+           if run == 2
+               [row, col] = find(matrixClass==c);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row-1,col-1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row-1,col) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row-1,col+1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row,col-1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row,col+1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row+1,col-1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row+1,col) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row+1,col+1) == class);
+           end
+           accuracy(c) = (accuracy(c) + sum(class == c))/5;
         end
-        acc(o) = accuracy / 120;
-        accuracy = 0;
-        o = o+1;
+        %trainError(k) = 1 - accuracy/120;
+        trainError(k) = 1 - mean(accuracy);
     end
-    if nRun == 1
-        figure(1)
-        hold on
-        plot(1 - acc,'.-b')
-        grid on
-        grid minor
-        clear acc
-        o = 1;
-    end
-    if nRun == 2
-        plot(1 - acc,':ob','markersize',2)
-    end
-    o = 1
+
+    testError = zeros(1,120);
     for k = rangeK
-        for n = 1:N_CELL  %colonna di partenza
-            for m = 1:N_CELL
-                dist(m,:,:) = pdist2(train(:,:,n)',test(:,:,m)');
-            end
-            for m = 1:5
-                newOrder = reshape(dist(:,:,m)',120,1);
-                c = 1;
-                for i = 1:5:120
-                    newOrder(i:i+4,2) = c;
-                    c = c+1;
+        accuracy = zeros(1,24);
+        for c = 1:24
+           class = zeros(1,5);
+           for m = 1:5
+                dist = zeros(24,5);
+                for C = 1:24
+                    for M = 1:5
+                        % misurazione m della cella c
+                        % confrontato con tutti i vettori M di tutte le celle C
+                        dist(C,M) = norm(test(:,m,c)-train(:,M,C));
+                    end
                 end
-                newOrder = sortrows(newOrder,1);
-                results(m) = mode(newOrder(1:k,2));
-            end
-            accuracy=accuracy+sum(results == n) ;
-            if nRun == 2
-                [r,c] = find(matrixClass == n);
-                accuracy = accuracy + sum(matrixClass(r-1,c-1) == results);
-                accuracy = accuracy + sum(matrixClass(r-1,c) == results);
-                accuracy = accuracy + sum(matrixClass(r-1,c+1) == results);
-                accuracy = accuracy + sum(matrixClass(r,c-1) == results);
-                accuracy = accuracy + sum(matrixClass(r,c+1) == results);
-                accuracy = accuracy + sum(matrixClass(r+1,c-1) == results);
-                accuracy = accuracy + sum(matrixClass(r+1,c) == results);
-                accuracy = accuracy + sum(matrixClass(r+1,c+1) == results);
-            end
+                % trovo i k vettori più vicini:
+                d = reshape(dist',1,120);
+                d(2,1:120) = repelem(1:24,5);
+                d = d';
+                d = sortrows(d,1);
+                class(m) = mode(d(1:k,2));
+           end
+           %accuracy = accuracy + sum(class == c);
+           if run == 2
+               [row, col] = find(matrixClass==c);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row-1,col-1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row-1,col) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row-1,col+1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row,col-1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row,col+1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row+1,col-1) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row+1,col) == class);
+               accuracy(c) = accuracy(c) +...
+                             sum(matrixClass(row+1,col+1) == class);
+           end
+           accuracy(c) = (accuracy(c) + sum(class == c))/5;
         end
-        acc2(o) = accuracy/120;
-        accuracy = 0;
-        o = o+1;
+        %testError(k) = 1 - accuracy/120;
+        testError(k) = 1 - mean(accuracy);
+
     end
-    if nRun == 1
-        plot(1 - acc2,'.-r')
-        clear acc2
-        o = 1;
-    end
-    if nRun == 2
-        plot(1 - acc2, ':or', 'markersize',2)
-    end
+
+    figure(1)
+    hold on
+    grid on
+    grid minor
+    plot(trainError, '.-')
+    plot(testError, '.-')
+
 end
-legend('Training set','Test set',...
-    'Training set (adjacent cells)',...
-    'Test set (adjacent cells)','location','southeast')
-xlabel('k nearest neighbours')
+
+legend('Training set', 'Test set', 'location','southeast')
+xlabel('Number of neighbours k')
 ylabel('Misclassification rate')
-title('k-NN classifier')
-
-
-%
-% for n = 1:24
-%     for m = 1:24
-%
-%         dist()=pdist2(train(:,:,m)',train(:,:,n)');
-%         minima=min(dist)
-%         celldistance(m)=min(minima)
-%
-%     end
-%         [value,index] = min(celldistance)
-%         results(n)=index
-% end
