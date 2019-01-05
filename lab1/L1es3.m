@@ -8,8 +8,12 @@ matrixClass = [-1 -1 -1 -1 -1 -1; -1 1 2 3 4 -1; -1 5 6 7 8 -1;...
                -1 9 10 11 12 -1; -1 13 14 15 16 -1; -1 17 18 19 20 -1;...
                -1 21 22 23 24 -1; -1 -1 -1 -1 -1 -1];
 
-for run = 1:1
-    trainError = zeros(1,120);
+trainError = zeros(1,120);
+testError = zeros(1,120);
+trainErrorAdj = zeros(1,120);
+testErrorAdj = zeros(1,120);
+for run = 1:2
+   
     for k = rangeK
         accuracy = zeros(1,24);
         for c = 1:24
@@ -52,11 +56,15 @@ for run = 1:1
            end
            accuracy(c) = (accuracy(c) + sum(class == c))/5;
         end
-        %trainError(k) = 1 - accuracy/120;
-        trainError(k) = 1 - mean(accuracy);
+        if run == 1
+            %trainError(k) = 1 - accuracy/120;
+            trainError(k) = 1 - mean(accuracy);
+        end
+        if run == 2
+            trainErrorAdj(k) = 1 - mean(accuracy);
+        end
     end
 
-    testError = zeros(1,120);
     for k = rangeK
         accuracy = zeros(1,24);
         for c = 1:24
@@ -99,20 +107,26 @@ for run = 1:1
            end
            accuracy(c) = (accuracy(c) + sum(class == c))/5;
         end
-        %testError(k) = 1 - accuracy/120;
-        testError(k) = 1 - mean(accuracy);
-
+        if run == 1
+            %testError(k) = 1 - accuracy/120;
+            testError(k) = 1 - mean(accuracy);
+        end
+        if run == 2
+            testErrorAdj(k) = 1 - mean(accuracy);
+        end
     end
 
-    figure(1)
-    hold on
-    grid on
-    grid minor
-    plot(trainError, '.-')
-    plot(testError, '.-')
 
 end
-
-legend('Training set', 'Test set', 'location','southeast')
+figure(1)
+hold on
+grid on
+grid minor
+plot(trainError, '.-')
+plot(testError, '.-')
+plot(trainErrorAdj, '.:', 'color', [0.3010, 0.7450, 0.9330])
+plot(testErrorAdj, '.:', 'color', [0.6350, 0.0780, 0.1840])
+legend('Training set', 'Test set', 'Training set (adjacent cells)', 'Test set (adjacent cells)', 'location','southeast')
 xlabel('Number of neighbours k')
 ylabel('Misclassification rate')
+title('k-NN classifier')
