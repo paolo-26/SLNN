@@ -104,6 +104,8 @@ grid on
 grid minor
 title('Most important eigenvectors')
 xlim([1 220])
+xlabel('Feature')
+ylabel('Value')
 
 
 %% Optional part
@@ -115,11 +117,13 @@ figure(3)
 hold on
 plot(m1)
 plot(m2)
-plot(w)
+%plot(w)
 title('Mean vectors')
 grid on; grid minor
 xlim([1 220])
-legend('Class 1','Class 2','Difference')
+legend('Class 1','Class 2')%,'Difference')
+xlabel('Feature')
+ylabel('Value')
 
 %% 1. Without PCA on the original data
 for k = 1:length(classTest)
@@ -145,7 +149,7 @@ display(['Accuracy without PCA: ', num2str(acc*100), '%'])
 
 
 %% 3. With only N retained features
-N = 220;  % Retained features
+N = 100;  % Retained features
 for k = 1:length(classTest)
     cl(k) = sign(w(1:N)'*(classTest(1:N,k)-x0(1:N)));
 end
@@ -274,5 +278,5 @@ xlabel('K')
 ylabel('Accuracy')
 xlim([0,220])
 grid minor
-legend('Train','test')
+legend('Train','test','location','southeast')
 %ylim([0,1])
