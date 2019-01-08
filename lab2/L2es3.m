@@ -7,9 +7,9 @@ test = [sum(data.ytest == 1) sum(data.ytest == 2)];
 theta(:,1) = sum(data.xtrain(1:train(1),:) == 1)/train(1);
 theta(:,2) = sum(data.xtrain(train(2)+1:end,:) == 1)/train(2);
 pie = [train(1)/length(data.ytrain);
-       train(2)/length(data.ytrain)]
+       train(2)/length(data.ytrain)];
 
-   theta = full(theta)
+   theta = full(theta);
 for k = 1:length(data.xtrain)
     resTrain(k,:) = sum(log(theta(find(data.xtrain(k,:)==1),:))) +...
         sum(log(1-theta(find(data.xtrain(k,:)==0),:))) + log(pie(1));
@@ -23,8 +23,8 @@ end
 classesTrain = (resTrain(:,1) < resTrain(:,2))+1;
 classesTest = (resTest(:,1) < resTest(:,2))+1;
 
-acc(1) = sum(classesTrain == data.ytrain)/length(data.ytrain)*100;
-acc(2) = sum(classesTest == data.ytest)/length(data.ytest)*100;
+acc(1) = sum(classesTrain == data.ytrain)/length(data.ytrain)*100
+acc(2) = sum(classesTest == data.ytest)/length(data.ytest)*100
 
 %% Optional part
 
@@ -34,12 +34,12 @@ acc(2) = sum(classesTest == data.ytest)/length(data.ytest)*100;
 %         (1-theta(j,:)).*pie(1,:).*log((1-theta(j,:)+eps)/(1-thetaJ+eps)));
 % end
 
-I = zeros(1,600)
+I = zeros(1,600);
 
 
 for j = 1:length(theta)
    thetaJ = sum(pie.*theta(j,:)');
-   thetaJ2(j) = thetaJ
+   thetaJ2(j) = thetaJ;
    for class=1:2
     I(j) = I(j) + theta(j,class)*pie(class,1)*log((theta(j,class)+eps)/(thetaJ+eps))+(1-theta(j,class))*pie(class,1)*log((1-theta(j,class)+eps)/(1-thetaJ+eps));
    end
