@@ -41,7 +41,7 @@ stem(find(uninformativeWords == 0),theta(find(uninformativeWords == 0),2),'marke
 grid on
 grid minor
 ylim([0 1])
-title(['Features that differs by at most ', num2str(err)])
+title(['Features that differ by at most ', num2str(err)])
 
 %plot(find(unin2),find(unin2),'.')
 %xticks([find(unin)])
