@@ -14,8 +14,8 @@ scatter(male(:,1),male(:,2),'xb')
 scatter(female(:,1),female(:,2),'om')
 grid on
 grid minor
-xlabel('Height (cm)')
-ylabel('Weight (kg)')
+xlabel('Weight (lb)')
+ylabel('Height (in)')
 legend('Males','Females','location','northwest')
 xlim([120 220])
 ylim([30 130])
@@ -30,7 +30,7 @@ h2 = histcounts(female(:,1),edges);
 b = bar(edges(1:end-1),[h1;h2]',1);
 b(1).FaceColor = cartaDaZucchero;
 b(2).FaceColor = ametista;
-xlabel('Height (cm)')
+xlabel('Weight (lb)')
 ylabel('Number of people')
 grid on
 grid minor
@@ -45,7 +45,7 @@ h2 = histcounts(female(:,2),edges);
 b = bar(edges(1:end-1),[h1;h2]',1);
 b(1).FaceColor = cartaDaZucchero;
 b(2).FaceColor = ametista;
-xlabel('Weight (kg)')
+xlabel('Height (in)')
 ylabel('Number of people')
 grid on
 grid minor
@@ -96,7 +96,7 @@ F = reshape(F,length(x2),length(x1));
 surf(x1,x2,F);
 caxis([min(F(:))-.5*range(F(:)),max(F(:))]);
 axis([120 220 30 130 0 max(F(:))])
-xlabel('Height (cm)'); ylabel('Weight (kg)'); zlabel('Probability Density - males');
+xlabel('Weight (lb)'); ylabel('Height (in)'); zlabel('Probability Density - males');
 title('Males')
 colormap parula; view(0,90); axis equal; colorbar;
 
@@ -109,6 +109,6 @@ F = reshape(F,length(x2),length(x1));
 surf(x1,x2,F);
 caxis([min(F(:))-.5*range(F(:)),max(F(:))]);
 axis([120 220 30 130 0 max(F(:))])
-xlabel('Height (cm)'); ylabel('Weight (kg)'); zlabel('Probability Density - females');
+xlabel('Weight (lb)'); ylabel('Height (in)'); zlabel('Probability Density - females');
 title('Females')
 colormap parula; view(0,90); axis equal; colorbar;
