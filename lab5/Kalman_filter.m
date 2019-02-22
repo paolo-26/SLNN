@@ -87,23 +87,23 @@ plot(mut(2,:),'k:', 'linewidth',1.5)
 plot(z(2,:), 'color', [0.9290, 0.6940, 0.1250])
 legend('Observed','Estimated','Filtered','Real', 'location', 'best')
 
-% figure(4)
-% hold on
-% grid on
-% grid minor
-% xlabel('\it t'); ylabel('\it y');
-% title('Velocity_x vs time')
-% plot(mut(3,:),':', 'linewidth',2)
-% plot(z(3,:), 'linewidth',2)
-% legend('Filtered','Real', 'location', 'best')
-% 
-% figure(5)
-% hold on
-% grid on
-% grid minor
-% xlabel('\it t'); ylabel('\it x');
-% title('Velocity_y vs time')
-% plot(mut(4,:),':', 'linewidth',2)
-% plot(z(4,:), 'linewidth',2)
-% legend('Filtered','Real', 'location', 'best')
+figure(4)
+hold on
+grid on
+grid minor
+xlabel('\it t'); ylabel('\it y');
+title('Velocity_x vs time')
+plot(mut(3,:),':', 'linewidth',1.5)
+plot(z(3,:), 'linewidth',1)
+legend('Filtered','Real', 'location', 'best')
+
+figure(5)
+hold on
+grid on
+grid minor
+xlabel('\it t'); ylabel('\it x');
+title('Velocity_y vs time')
+plot(mut(4,:),':', 'linewidth',1.5)
+plot(z(4,:), 'linewidth',1)
+legend('Filtered','Real', 'location', 'best')
 
